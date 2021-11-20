@@ -17,7 +17,7 @@ pipeline{
        steps
         {
             script{
-                 if { expression { params.RELEASE}}   
+                 if (params.RELEASE) 
                     {
                         echo "Publish RELEASE is TRUE."
                     }
