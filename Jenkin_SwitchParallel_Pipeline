@@ -20,9 +20,55 @@ pipeline
       {
         parallel
         {
-            
+          stage("Release")
+          {
+            when { expression { params.RELEASE}}
+               steps
+               {
+                echo "Release the build"
+               }
+          }
+          stage("Pre-Release")
+          {
+            when { expression { !params.RELEASE}}
+               steps
+               {
+                echo "Pre-Release build"
+               }
+          }
         }
-      }
+        
+      stage("Deploy")
+      {
+        parallel
+        {
+          stage("INT")
+          {
+            when { expression { params.DEPLOY_TO=="INT"}}
+               steps
+               {
+                echo "Integration."
+               }
+          }
+          stage("PRE")
+          {
+            when { expression { params.DEPLOY_TO=="PRE"}}
+               steps
+               {
+                echo "Pre Deployment."
+               }
+          }
+          stage("PROD")
+          {
+            when { expression { params.DEPLOY_TO=="PROD"}}
+               steps
+               {
+                echo "Production deployment."
+               }
+          }
+        }  
+        
+        
    }
    
    
