@@ -1,32 +1,53 @@
 pipeline{
-    agent any
-    parameters
-    {
-      booleanParam(name: "RELEASE", defaultValue: false)
+    tools{
+        jdk 'TP1-JAVA'
+        maven 'TP1-MAVEN'
     }
+    
+    agent {label 'linux_slave'}
+    
     stages{
-      stage("build")
-      {
-        steps
-        {
-          echo "build the code"
+        stage('CloneRepo'){
+            steps{
+                git 'https://github.com/rawat-bluebell/Jenkine-DemoProject.git'
+            }
         }
-      }
-      stage("Publish")
-      {
-       steps
-        {
-            script{
-                 if (params.RELEASE) 
-                    {
-                        echo "Publish RELEASE is TRUE."
-                    }
-                 else 
-                    {
-                        echo "Publish RELEASE False"   
-                    }
-                  }
+        stage('CompileCode'){
+            steps{
+               sh 'mvn compile' 
+            }
         }
-      }
-           }
+        stage('CodeReview'){
+            steps{
+               sh 'mvn pmd:pmd' 
+            }
+        }
+        stage('UnitTest'){
+            steps{
+                sh 'mvn test'
+            }
+            post{
+                success{
+                    junit 'target/surefire-reports/*.xml'
+                }
+            }
+        }
+        stage('CodeCoverage'){
+            steps{
+                sh 'mvn cobertura:cobertura -Dcobertura.report.format=xml'
+            }
+            post
+            {
+                success
+                {
+                    cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'target/site/cobertura/coverage.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+                }
+            }
+        }
+        stage('Package'){
+            steps{
+              sh 'mvn package'  
+            }
+        }
+    }
 }
