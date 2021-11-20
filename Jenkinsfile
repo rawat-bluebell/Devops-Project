@@ -14,12 +14,19 @@ pipeline{
       }
       stage("Publish")
       {
-       when { expression { params.RELEASE}}   
-        steps
+       steps
         {
-          echo "Publish the code"
+            script{
+                 if { expression { params.RELEASE}}   
+                    {
+                        echo "Publish RELEASE is TRUE."
+                    }
+                 else 
+                    {
+                        echo "Publish RELEASE False"   
+                    }
+                  }
         }
       }
-      
-    }
+           }
 }
